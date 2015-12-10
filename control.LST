@@ -1,0 +1,413 @@
+C51 COMPILER V9.00   CONTROL                                                               06/13/2013 19:58:53 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE CONTROL
+OBJECT MODULE PLACED IN control.OBJ
+COMPILER INVOKED BY: F:\Keil\C51\BIN\C51.EXE control.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <head.h>
+   2          
+   3          bit idata flag = 1;
+   4          
+   5          bit choose_motor = 1;
+   6          
+   7          bit choose_type = 1;
+   8          
+   9          unsigned char hl_hb0;
+  10          
+  11          unsigned char hl_lb0;
+  12          
+  13          unsigned char ll_hb0;
+  14          
+  15          unsigned char ll_lb0;
+  16          
+  17          unsigned char hb1;
+  18          
+  19          unsigned char lb1;
+  20                  
+  21          /************************电机控制*******************/
+  22          void page_control()
+  23          {
+  24   1              Display_BMP(0,0,46);
+  25   1              Time_delay(400);
+  26   1              Display_BMP(0,0,3);//背景图片
+  27   1              
+  28   1              Enable_area(1);    //使能组为1
+  29   1      
+  30   1              Display_BMP_default(260,210,14); //go back pic
+  31   1      
+  32   1              Display_BMP_default(0,0,10);  //灯泡
+  33   1      
+  34   1              Display_BMP_default(35,0,12); //DC motor pic
+  35   1      
+  36   1              Display_BMP_default(160,0,10);  //灯泡
+  37   1      
+  38   1              Display_BMP_default(190,0,13); //AC motor pic
+  39   1      
+  40   1              Display_BMP_default(5,64,19);//direction:  128*64
+  41   1      
+  42   1              Display_BMP_default(128,74,15);//anticlockwise_yes 40*37
+  43   1      
+  44   1              Display_BMP_default(200,74,18);//clockwise_no      40*37
+  45   1      
+  46   1              Display_BMP_default(5,118,20);//Speed: 128*64
+  47   1      
+  48   1              Display_BMP_default(128,128,21);//bar1  120*64
+  49   1      
+  50   1              
+  51   1      
+  52   1      
+  53   1              Set_area(10,260,210,320,240,1,3); //back按键区域触摸
+  54   1              
+  55   1              Set_area(11,0,0,160,54,1,3); //DC区域触摸
+C51 COMPILER V9.00   CONTROL                                                               06/13/2013 19:58:53 PAGE 2   
+
+  56   1      
+  57   1              Set_area(12,160,0,320,54,1,3); //AC区域触摸
+  58   1      
+  59   1              Set_area(13,128,74,168,100,1,3); //区域触摸anticlockwise
+  60   1      
+  61   1              Set_area(14,200,74,240,100,1,3); //区域触摸clockwise
+  62   1      
+  63   1              Set_area(15,128,128,152,192,1,3); //区域触摸bar1
+  64   1      
+  65   1              Set_area(16,128,128,176,192,1,3); //区域触摸bar2
+  66   1      
+  67   1              Set_area(17,128,128,200,192,1,3); //区域触摸bar3
+  68   1      
+  69   1              Set_area(18,128,128,224,192,1,3); //区域触摸bar4
+  70   1      
+  71   1              Set_area(19,128,128,248,192,1,3); //区域触摸bar5  //120,120~250,200
+  72   1              //void Set_area(unsigned char key_value, unsigned int X1, unsigned int Y1,
+  73   1              //                              unsigned int X2, unsigned int Y2, unsigned char group, unsigned char type)
+  74   1      
+  75   1              //while(1)
+  76   1              //{Command_Receive();}
+  77   1              direct = 0;
+  78   1      
+  79   1              phase = 0;
+  80   1      
+  81   1              oe = 0;
+  82   1              
+  83   1              TR0 = 0; 
+  84   1              
+  85   1              gameormotor = 0;//初始化电机
+  86   1      
+  87   1      
+  88   1      }
+  89          
+  90          void UART_motor(void)   interrupt 1
+  91          {
+  92   1              if(gameormotor==0)
+  93   1              {
+  94   2              if(choose_motor == 1)
+  95   2              {
+  96   3                      //LED0 = 0;
+  97   3      
+  98   3                      TR0 = 0;
+  99   3      
+ 100   3                      flag = ~flag;
+ 101   3      
+ 102   3                      if(flag)
+ 103   3                      {
+ 104   4                              direct2 = 0;
+ 105   4      
+ 106   4                              direct1 = 0;
+ 107   4      
+ 108   4                              TH0 = ll_hb0;
+ 109   4      
+ 110   4                              TL0 = ll_lb0;
+ 111   4      
+ 112   4                              TR0 = 1;
+ 113   4      
+ 114   4                              return;
+ 115   4                      }
+ 116   3                      else
+ 117   3                      {
+C51 COMPILER V9.00   CONTROL                                                               06/13/2013 19:58:53 PAGE 3   
+
+ 118   4                      if(choose_type)
+ 119   4                      {
+ 120   5                              direct2 = 1;
+ 121   5      
+ 122   5                              direct1 = 0;    
+ 123   5                      }
+ 124   4                      else
+ 125   4                      {
+ 126   5                              direct2 = 0;
+ 127   5      
+ 128   5                              direct1 = 1;
+ 129   5                      }
+ 130   4                      TH0 = hl_hb0;
+ 131   4      
+ 132   4                      TL0 = hl_lb0;
+ 133   4                      
+ 134   4                      TR0 = 1;
+ 135   4                      
+ 136   4                      return;         
+ 137   4                      }
+ 138   3              }
+ 139   2              if(choose_motor == 0)
+ 140   2              {
+ 141   3                      LED0 = 1;
+ 142   3      
+ 143   3                      direct = choose_type;
+ 144   3      
+ 145   3                      TR0 = 0;
+ 146   3      
+ 147   3                      TH0 = hb1;
+ 148   3      
+ 149   3                      TL0 = lb1;
+ 150   3      
+ 151   3                      clk = ~clk;
+ 152   3      
+ 153   3                      TR0 = 1;
+ 154   3              }
+ 155   2              }
+ 156   1              else
+ 157   1              {
+ 158   2                      /*snake_begin();*/
+ 159   2              }
+ 160   1              
+ 161   1      }
+ 162          
+ 163          void LCD_key10()  //back button
+ 164          {       
+ 165   1              if(Receive_Memory[2]==1)//释放
+ 166   1              {       
+ 167   2                      direct1 = 0;
+ 168   2      
+ 169   2                      direct2 = 0;
+ 170   2      
+ 171   2                      TR0 = 0;
+ 172   2                      
+ 173   2                      page_home();
+ 174   2              
+ 175   2              }
+ 176   1                      //if (Receive_Memory[2]==2)//按下
+ 177   1                      //{
+ 178   1                              //Display_BMP(0,0,7);
+ 179   1                      //}
+C51 COMPILER V9.00   CONTROL                                                               06/13/2013 19:58:53 PAGE 4   
+
+ 180   1      }
+ 181          
+ 182          void LCD_key11()        //DC button
+ 183          {       
+ 184   1              if(Receive_Memory[2]==1)//释放
+ 185   1                      {
+ 186   2                              ;
+ 187   2                      }
+ 188   1              if (Receive_Memory[2]==2)//按下
+ 189   1                      {
+ 190   2                              Display_BMP_default(0,0,11);//light up DC bulb
+ 191   2                              Display_BMP_default(160,0,10);  //turn off AC bulb
+ 192   2                      
+ 193   2                              Display_BMP(120,120,26);//cover
+ 194   2                              Display_BMP_default(128,128,21);//bar1
+ 195   2      
+ 196   2                              choose_motor = 1;
+ 197   2      
+ 198   2                              direct1 = 0;
+ 199   2      
+ 200   2                              direct2 = 0;
+ 201   2      
+ 202   2                              TR0 = 0;
+ 203   2      
+ 204   2      
+ 205   2                      }
+ 206   1      }
+ 207          
+ 208          void LCD_key12()         //AC button
+ 209          {       
+ 210   1              if(Receive_Memory[2]==1)//释放
+ 211   1                      {
+ 212   2                              ;
+ 213   2                      }
+ 214   1              if (Receive_Memory[2]==2)//按下
+ 215   1                      {
+ 216   2                              Display_BMP_default(160,0,11);  //light up AC bulb
+ 217   2                              Display_BMP_default(0,0,10);   //turn off DC bulb
+ 218   2      
+ 219   2                              Display_BMP(120,120,26);//cover
+ 220   2                              Display_BMP_default(128,128,21);//bar1
+ 221   2      
+ 222   2                              choose_motor = 0;
+ 223   2      
+ 224   2                              direct1 = 0;
+ 225   2      
+ 226   2                              direct2 = 0;
+ 227   2      
+ 228   2                              TR0 = 0;
+ 229   2                      }
+ 230   1      }
+ 231          
+ 232          void LCD_key13()         //anticlockwise
+ 233          {       
+ 234   1              if(Receive_Memory[2]==1)//释放
+ 235   1                      {
+ 236   2                              ;
+ 237   2                      }
+ 238   1              if (Receive_Memory[2]==2)//按下
+ 239   1                      {
+ 240   2                              Display_BMP_default(128,74,15);//anticlockwise_yes 40*37
+ 241   2      
+C51 COMPILER V9.00   CONTROL                                                               06/13/2013 19:58:53 PAGE 5   
+
+ 242   2                              Display_BMP_default(200,74,18);//clockwise_no      40*37
+ 243   2      
+ 244   2                              choose_type = 1;
+ 245   2                      }
+ 246   1      }
+ 247          
+ 248          void LCD_key14()         //clockwise
+ 249          {       
+ 250   1              if(Receive_Memory[2]==1)//释放
+ 251   1                      {
+ 252   2                              ;
+ 253   2                      }
+ 254   1              if (Receive_Memory[2]==2)//按下
+ 255   1                      {
+ 256   2                              Display_BMP_default(128,74,16);//anticlockwise_no 40*37
+ 257   2      
+ 258   2                              Display_BMP_default(200,74,17);//clockwise_yes     40*37
+ 259   2      
+ 260   2                              choose_type = 0;
+ 261   2                      }
+ 262   1      }
+ 263          
+ 264          void LCD_key15()         //bar1
+ 265          {       
+ 266   1              if(Receive_Memory[2]==1)//释放
+ 267   1                      {
+ 268   2                              ;
+ 269   2                      }
+ 270   1              if (Receive_Memory[2]==2)//按下
+ 271   1                      {
+ 272   2                              Display_BMP(120,120,26);//cover
+ 273   2      
+ 274   2                              Display_BMP_default(128,128,21);//bar1
+ 275   2      
+ 276   2                              hl_hb0 = 0xe0;
+ 277   2                              hl_lb0 = 0x00;
+ 278   2                              ll_hb0 = 0xc0;
+ 279   2                              ll_lb0 = 0x00;
+ 280   2                              hb1 = 0xff;
+ 281   2                              lb1 = 0x00;
+ 282   2                              TR0 = 1;
+ 283   2                              TF0 = 1;
+ 284   2                      }
+ 285   1      }
+ 286          
+ 287          void LCD_key16()         //bar2
+ 288          {       
+ 289   1              if(Receive_Memory[2]==1)//释放
+ 290   1                      {
+ 291   2                              ;
+ 292   2                      }
+ 293   1              if (Receive_Memory[2]==2)//按下
+ 294   1                      {
+ 295   2                              Display_BMP(120,120,26);//cover
+ 296   2      
+ 297   2                              Display_BMP_default(128,128,22);//bar2
+ 298   2      
+ 299   2                              hl_hb0 = 0xc0;
+ 300   2                              hl_lb0 = 0x00;
+ 301   2                              ll_hb0 = 0xc0;
+ 302   2                              ll_lb0 = 0x00;
+ 303   2                              hb1 = 0xef;
+C51 COMPILER V9.00   CONTROL                                                               06/13/2013 19:58:53 PAGE 6   
+
+ 304   2                              lb1 = 0x00;
+ 305   2                              TR0 = 1;
+ 306   2                              TF0 = 1;
+ 307   2                      }
+ 308   1      }
+ 309          
+ 310          void LCD_key17()         //bar3
+ 311          {       
+ 312   1              if(Receive_Memory[2]==1)//释放
+ 313   1                      {
+ 314   2                              ;
+ 315   2                      }
+ 316   1              if (Receive_Memory[2]==2)//按下
+ 317   1                      {
+ 318   2                              Display_BMP(120,120,26);//cover
+ 319   2      
+ 320   2                              Display_BMP_default(128,128,23);//bar3
+ 321   2      
+ 322   2                              hl_hb0 = 0xa0;
+ 323   2                              hl_lb0 = 0x00;
+ 324   2                              ll_hb0 = 0xc0;
+ 325   2                              ll_lb0 = 0x00;
+ 326   2                              hb1 = 0xdf;
+ 327   2                              lb1 = 0x00;
+ 328   2                              TR0 = 1;
+ 329   2                              TF0 = 1;
+ 330   2                      }
+ 331   1      }
+ 332          
+ 333          void LCD_key18()         //bar4
+ 334          {       
+ 335   1              if(Receive_Memory[2]==1)//释放
+ 336   1                      {
+ 337   2                              ;
+ 338   2                      }
+ 339   1              if (Receive_Memory[2]==2)//按下
+ 340   1                      {
+ 341   2                              Display_BMP(120,120,26);//cover
+ 342   2      
+ 343   2                              Display_BMP_default(128,128,24);//bar4
+ 344   2      
+ 345   2                              hl_hb0 = 0x90;
+ 346   2                              hl_lb0 = 0x00;
+ 347   2                              ll_hb0 = 0xc0;
+ 348   2                              ll_lb0 = 0x00;
+ 349   2                              hb1 = 0xcf;
+ 350   2                              lb1 = 0x00;
+ 351   2                              TR0 = 1;
+ 352   2                              TF0 = 1;
+ 353   2                      }
+ 354   1      }
+ 355          
+ 356          void LCD_key19()         //bar5
+ 357          {       
+ 358   1              if(Receive_Memory[2]==1)//释放
+ 359   1                      {
+ 360   2                              ;
+ 361   2                      }
+ 362   1              if (Receive_Memory[2]==2)//按下
+ 363   1                      {
+ 364   2                              Display_BMP(120,120,26);//cover
+ 365   2      
+C51 COMPILER V9.00   CONTROL                                                               06/13/2013 19:58:53 PAGE 7   
+
+ 366   2                              Display_BMP_default(128,128,25);//bar5
+ 367   2      
+ 368   2                              hl_hb0 = 0x50;
+ 369   2                              hl_lb0 = 0x00;
+ 370   2                              ll_hb0 = 0xc0;
+ 371   2                              ll_lb0 = 0x00;
+ 372   2                              hb1 = 0xaf;
+ 373   2                              lb1 = 0x00;
+ 374   2                              TR0 = 1;
+ 375   2                              TF0 = 1;
+ 376   2                      }
+ 377   1      }
+ 378          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1066    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      3    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

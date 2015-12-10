@@ -1,0 +1,116 @@
+C51 COMPILER V9.00   HOME                                                                  06/13/2013 19:58:54 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE HOME
+OBJECT MODULE PLACED IN home.OBJ
+COMPILER INVOKED BY: F:\Keil\C51\BIN\C51.EXE home.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <head.h>
+   2          
+   3          
+   4          //-------------------- 主页-----------------
+   5          void page_home()
+   6          {
+   7   1              
+   8   1              Display_BMP(0,0,2);
+   9   1      
+  10   1              Display_BMP_default(0,0,6);     //motor
+  11   1      
+  12   1              Display_BMP_default(0,64,8); //pic
+  13   1      
+  14   1              Display_BMP_default(0,128,4); //game
+  15   1      
+  16   1              Set_area(0,0,0,64,64,0,3); //区域触摸
+  17   1      
+  18   1              Set_area(1,0,0,64,128,0,3); //区域触摸 
+  19   1      
+  20   1              Set_area(2,0,128,64,172,0,3); //区域触摸
+  21   1      
+  22   1              Set_area(3,160,0,320,120,0,3);  //introduction
+  23   1      
+  24   1      
+  25   1              //void Set_area(unsigned char key_value, unsigned int X1, unsigned int Y1,
+  26   1              //                              unsigned int X2, unsigned int Y2, unsigned char group, unsigned char type)
+  27   1      
+  28   1              Enable_area(0);//使能触摸区域
+  29   1              //void Enable_area(unsigned char group)//使能触摸区域
+  30   1      
+  31   1      
+  32   1      
+  33   1              touch_regul(3);
+  34   1      
+  35   1              while(1)
+  36   1              {Command_Receive();}
+  37   1      
+  38   1      }
+  39          
+  40          void LCD_Key00()
+  41                  {       
+  42   1                      if(Receive_Memory[2]==1)//释放
+  43   1                      {
+  44   2                              page_control();
+  45   2                      }
+  46   1                      if (Receive_Memory[2]==2)//按下
+  47   1                      {
+  48   2                              Display_BMP(0,0,7);
+  49   2                      }
+  50   1              }
+  51          
+  52          
+  53          void LCD_Key01()
+  54                  {
+  55   1                      if (Receive_Memory[2]==1)  //释放
+C51 COMPILER V9.00   HOME                                                                  06/13/2013 19:58:54 PAGE 2   
+
+  56   1                      {
+  57   2                              page_photo();
+  58   2                      }
+  59   1              
+  60   1                      if(Receive_Memory[2]==2) //按下
+  61   1                      {
+  62   2                              Display_BMP(0,64,9);
+  63   2                      }  
+  64   1              
+  65   1              }
+  66          
+  67          void LCD_Key02()
+  68                  {
+  69   1                      if (Receive_Memory[2]==1)  //释放
+  70   1                      {
+  71   2                              page_game();
+  72   2                      }
+  73   1              
+  74   1                      if(Receive_Memory[2]==2) //按下
+  75   1                      {
+  76   2                              Display_BMP(0,128,5);
+  77   2                      }  
+  78   1              
+  79   1              }
+  80          
+  81          void LCD_Key03()
+  82          {
+  83   1              if (Receive_Memory[2]==1)  //释放
+  84   1                      {
+  85   2                              Display_BMP_default(0,0,47);
+  86   2                              Time_delay(800);
+  87   2                              page_home();    
+  88   2                      }
+  89   1      
+  90   1      
+  91   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    286    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

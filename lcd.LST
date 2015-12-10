@@ -1,0 +1,158 @@
+C51 COMPILER V9.00   LCD                                                                   06/13/2013 19:58:52 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN lcd.OBJ
+COMPILER INVOKED BY: F:\Keil\C51\BIN\C51.EXE lcd.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1                  #include <head.h>
+   2                  
+   3                  /************************LCD显示*******************/
+   4                  
+   5                  void Display_BMP(unsigned int X,unsigned int Y,unsigned int No)
+   6                  {
+   7   1              
+   8   1                      Send_Check = 0;
+   9   1                      
+  10   1                      UART_SendPacked_S(0x55);
+  11   1                      
+  12   1                      UART_SendPacked_S(0x07);
+  13   1                      
+  14   1                      UART_SendPacked_D(0x09);
+  15   1                      
+  16   1                      Input_position(X,Y);
+  17   1                      
+  18   1                      Input_data(No);
+  19   1                      
+  20   1                      UART_SendPacked_S(Send_Check);          //校验值
+  21   1                      
+  22   1                      UART_SendPacked_S(0xAA);                        //帧尾
+  23   1                      
+  24   1              }
+  25          
+  26          
+  27                  void Display_BMP_default(unsigned int X,unsigned int Y,unsigned int No)
+  28                  {
+  29   1              
+  30   1                      Send_Check = 0;
+  31   1                      
+  32   1                      UART_SendPacked_S(0x55);
+  33   1                      
+  34   1                      UART_SendPacked_S(0x07);
+  35   1                      
+  36   1                      UART_SendPacked_D(0x0E);
+  37   1                      
+  38   1                      Input_position(X,Y);
+  39   1                      
+  40   1                      Input_data(No);
+  41   1                      
+  42   1                      UART_SendPacked_S(Send_Check);          //校验值
+  43   1                      
+  44   1                      UART_SendPacked_S(0xAA);                        //帧尾
+  45   1                      
+  46   1              }
+  47          
+  48                  
+  49                  void clear_LCD(unsigned char value)             //清屏
+  50                  {
+  51   1                      
+  52   1                      Send_Check = 0;         //校验值清零
+  53   1                      
+  54   1                      UART_SendPacked_S(0x55);                        //发送帧头
+  55   1                      
+C51 COMPILER V9.00   LCD                                                                   06/13/2013 19:58:52 PAGE 2   
+
+  56   1                      UART_SendPacked_S(0x02);                        //数据包有效数据个数
+  57   1                      
+  58   1                      UART_SendPacked_D(0x80);                        //0X80指令
+  59   1                      
+  60   1                      UART_SendPacked_D(value);                       //指令数据
+  61   1                      
+  62   1                      UART_SendPacked_S(Send_Check);          //校验值
+  63   1                      
+  64   1                      UART_SendPacked_S(0xAA);                        //帧尾
+  65   1              
+  66   1              }
+  67                  
+  68                  
+  69                  void set_backlight(unsigned int value)
+  70                  {
+  71   1                      
+  72   1                      Send_Check = 0;                                         //校验值清零
+  73   1                      
+  74   1                      UART_SendPacked_S(0x55);                        //发送帧头
+  75   1                      
+  76   1                      UART_SendPacked_S(0x03);                        //数据包有效数据为3
+  77   1                      
+  78   1                      UART_SendPacked_D(0x89);                        //0x89指令
+  79   1                      
+  80   1                      Input_data(value);
+  81   1                      
+  82   1                      UART_SendPacked_S(Send_Check);                  //有效数据的校验和
+  83   1                      
+  84   1                      UART_SendPacked_S(0xAA);
+  85   1              
+  86   1              }
+  87                  
+  88                  
+  89                  void Display_NCharater(unsigned int X,unsigned int Y,unsigned char * start)
+  90                  {
+  91   1                      
+  92   1                      unsigned int i;
+  93   1                      
+  94   1                      unsigned char Num;
+  95   1                      
+  96   1                      for(i=0;start[i]!='\0';i++)
+  97   1                      {
+  98   2                              
+  99   2                              _nop_();
+ 100   2                      
+ 101   2                      }
+ 102   1                      
+ 103   1                      Num = i;
+ 104   1                      
+ 105   1                      Send_Check = 0;                         //校验值先清零
+ 106   1                      
+ 107   1                      UART_SendPacked_S(0x55);        //发送帧头
+ 108   1                      
+ 109   1                      UART_SendPacked_S(Num+5);       //数据包有效个数为Num+5
+ 110   1                      
+ 111   1                      UART_SendPacked_D(0x0c);        //0x0c指令
+ 112   1                      
+ 113   1                      Input_position(X,Y);            //输入位置
+ 114   1                      
+ 115   1                      for(i=0;i<Num;i++)
+ 116   1                      {
+ 117   2                      
+C51 COMPILER V9.00   LCD                                                                   06/13/2013 19:58:52 PAGE 3   
+
+ 118   2                              UART_SendPacked_D(start[i]);
+ 119   2                      
+ 120   2                      }
+ 121   1                      
+ 122   1                      UART_SendPacked_S(Send_Check);  //校验值
+ 123   1                      
+ 124   1                      UART_SendPacked_S(0xAA);            //帧尾
+ 125   1                      
+ 126   1              }
+ 127                  
+ 128                  
+ 129                  
+ 130                  
+ 131                  
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    327    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      25
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

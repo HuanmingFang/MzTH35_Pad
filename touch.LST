@@ -1,0 +1,305 @@
+C51 COMPILER V9.00   TOUCH                                                                 06/13/2013 19:58:53 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE TOUCH
+OBJECT MODULE PLACED IN touch.OBJ
+COMPILER INVOKED BY: F:\Keil\C51\BIN\C51.EXE touch.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<head.h>
+   2          
+   3          
+   4                  
+   5          
+   6          /**************************触摸**********************/
+   7          
+   8                  unsigned char Receive_Memory[6];//存储接受的指令包
+   9                  
+  10                  //显示区域设置，输入数据分别为键值，左上角xy坐标，右下角xy坐标，分组号以及类型
+  11                  void Set_area(unsigned char key_value, unsigned int X1, unsigned int Y1,                                        
+  12                                                  unsigned int X2, unsigned int Y2, unsigned char group, unsigned char type)
+  13                  {
+  14   1                      
+  15   1                      Send_Check = 0;                         //将校验值先清零
+  16   1                      
+  17   1                      UART_SendPacked_S(0x55);        //发送帧头
+  18   1                      
+  19   1                      UART_SendPacked_S(0x0c);        //数据包个数为 11个
+  20   1                      
+  21   1                      UART_SendPacked_D(0x25);        //0x25指令
+  22   1                      
+  23   1                      UART_SendPacked_D(key_value);
+  24   1                      
+  25   1                      Input_position(X1,Y1);
+  26   1                      
+  27   1                      Input_position(X2,Y2);
+  28   1                      
+  29   1                      UART_SendPacked_D(group);
+  30   1                      
+  31   1                      UART_SendPacked_D(type);
+  32   1                      
+  33   1                      UART_SendPacked_S(Send_Check);//包中有效数据的校验和
+  34   1                      
+  35   1                      UART_SendPacked_S(0xAA);
+  36   1              
+  37   1              }
+  38                  
+  39                  void Enable_area(unsigned char group)//使能触摸区域
+  40                  {
+  41   1                      
+  42   1                      Send_Check = 0;                                 //校验值清零
+  43   1                      
+  44   1                      UART_SendPacked_S(0x55);                //帧头
+  45   1                      
+  46   1                      UART_SendPacked_S(0x02);                //数据包为1个
+  47   1                      
+  48   1                      UART_SendPacked_D(0x26);                //0x89指令 
+  49   1                      
+  50   1                      UART_SendPacked_D(group);
+  51   1                      
+  52   1                      UART_SendPacked_S(Send_Check);  //包中有效数据的校验和
+  53   1                      
+  54   1                      UART_SendPacked_S(0xAA);
+  55   1              
+C51 COMPILER V9.00   TOUCH                                                                 06/13/2013 19:58:53 PAGE 2   
+
+  56   1              }
+  57                  
+  58                  //位图触摸的指令
+  59                  void Set_BMP(unsigned char Key_value,
+  60                                                  unsigned int Num1,unsigned int Num2,unsigned int X,unsigned int Y,
+  61                                                  unsigned char group,unsigned char type)
+  62                  {
+  63   1              
+  64   1                      Send_Check = 0;
+  65   1                      
+  66   1                      UART_SendPacked_S(0x55);
+  67   1                      
+  68   1                      UART_SendPacked_S(0x0C);
+  69   1                      
+  70   1                      UART_SendPacked_D(0x21);
+  71   1      
+  72   1                      UART_SendPacked_D(Key_value);
+  73   1                      
+  74   1                      Input_data(Num1);
+  75   1      
+  76   1                      Input_data(Num2);
+  77   1                      
+  78   1                      Input_position(X,Y);
+  79   1      
+  80   1                      UART_SendPacked_D(group);
+  81   1      
+  82   1                      UART_SendPacked_D(type);
+  83   1                      
+  84   1                      UART_SendPacked_S(Send_Check);          //校验值
+  85   1                      
+  86   1                      UART_SendPacked_S(0xAA);                        //帧尾
+  87   1                      
+  88   1              }
+  89          
+  90                  
+  91          /*      void Enable_BMP(unsigned char group)//使能触摸区域
+  92                  {
+  93                          Send_Check = 0;                                 //校验值清零
+  94                          
+  95                          UART_SendPacked_S(0x55);                //帧头
+  96                          
+  97                          UART_SendPacked_S(0x02);                //数据包为1个
+  98                          
+  99                          UART_SendPacked_D(0x22);                //0x89指令 
+ 100                          
+ 101                          UART_SendPacked_D(group);
+ 102                          
+ 103                          UART_SendPacked_S(Send_Check);  //包中有效数据的校验和
+ 104                          
+ 105                          UART_SendPacked_S(0xAA);
+ 106                  
+ 107                  }*/     
+ 108          
+ 109          
+ 110          
+ 111                  void Command_Receive()
+ 112                  {
+ 113   1              
+ 114   1              unsigned char num,tmp,i;
+ 115   1              
+ 116   1              for(i=0;i<6;i++)//清空指令包
+ 117   1                      {
+C51 COMPILER V9.00   TOUCH                                                                 06/13/2013 19:58:53 PAGE 3   
+
+ 118   2              
+ 119   2                              Receive_Memory[i] = 0;
+ 120   2                      
+ 121   2                      }
+ 122   1              Receive_Check = 0;
+ 123   1      
+ 124   1              tmp = UART_ReceivePacked_D();
+ 125   1      
+ 126   1              if(tmp!=0x55)   return;
+ 127   1              
+ 128   1              num = UART_ReceivePacked_D();
+ 129   1              
+ 130   1              for(i=0;i<num;i++)
+ 131   1              
+ 132   1                      {
+ 133   2                      
+ 134   2                              tmp = UART_ReceivePacked_D();
+ 135   2                              
+ 136   2                              Receive_Check+=tmp;
+ 137   2                              
+ 138   2                              Receive_Memory[i] = tmp;
+ 139   2                              
+ 140   2                      }
+ 141   1              
+ 142   1              tmp = UART_ReceivePacked_D();
+ 143   1              
+ 144   1              if(tmp!=Receive_Check)  return;
+ 145   1              
+ 146   1              tmp = UART_ReceivePacked_D();   
+ 147   1      
+ 148   1              if(tmp!=0xAA) 
+ 149   1              
+ 150   1              return;
+ 151   1              
+ 152   1              Command_Process();
+ 153   1              
+ 154   1              }
+ 155          
+ 156          
+ 157          
+ 158          
+ 159          
+ 160                  void Command_Process()
+ 161                  {
+ 162   1              
+ 163   1                      if(Receive_Memory[0]==0x28)
+ 164   1                      {
+ 165   2                              switch(Receive_Memory[1])
+ 166   2                                      {
+ 167   3                                              case 0: LCD_key00();break;
+ 168   3                                              
+ 169   3                                              case 1: LCD_key01();break;
+ 170   3                                              
+ 171   3                                              case 2: LCD_key02();break;
+ 172   3                              
+ 173   3                                              case 3: LCD_key03();break;
+ 174   3                                              
+ 175   3                                              case 4: LCD_key04();break;
+ 176   3                                              
+ 177   3                                              case 5: LCD_key05();break;
+ 178   3                                              
+ 179   3                                              case 6: LCD_key06();break;
+C51 COMPILER V9.00   TOUCH                                                                 06/13/2013 19:58:53 PAGE 4   
+
+ 180   3                                              
+ 181   3                                              case 7: LCD_key07();break;
+ 182   3                                              
+ 183   3                                              case 8: LCD_key08();break;
+ 184   3                                              
+ 185   3                                              case 9: LCD_key09();break;
+ 186   3                                              
+ 187   3                                              case 10: LCD_key10();break;
+ 188   3                                              
+ 189   3                                              case 11: LCD_key11();break;
+ 190   3                                              
+ 191   3                                              case 12: LCD_key12();break;
+ 192   3                                              
+ 193   3                                              case 13: LCD_key13();break;
+ 194   3                                              
+ 195   3                                              case 14: LCD_key14();break;
+ 196   3                                              
+ 197   3                                              case 15: LCD_key15();break;
+ 198   3                                              
+ 199   3                                              case 16: LCD_key16();break;
+ 200   3                                              
+ 201   3                                              case 17: LCD_key17();break;
+ 202   3                                              
+ 203   3                                              case 18: LCD_key18();break;
+ 204   3                                              
+ 205   3                                              case 19: LCD_key19();break;
+ 206   3      
+ 207   3                                              case 20: LCD_key20();break;
+ 208   3                                              
+ 209   3                                              case 21: LCD_key21();break;
+ 210   3                                              
+ 211   3                                              case 22: LCD_key22();break;
+ 212   3                                              
+ 213   3                                              case 23: LCD_key23();break;
+ 214   3                                              
+ 215   3                                              case 24: LCD_key24();break;
+ 216   3                                              
+ 217   3                                              case 25: LCD_key25();break;
+ 218   3                                              
+ 219   3                                              case 26: LCD_key26();break;
+ 220   3                                              
+ 221   3                                              case 27: LCD_key27();break;
+ 222   3                                              
+ 223   3                                              case 28: LCD_key28();break;
+ 224   3                                              
+ 225   3                                              case 29: LCD_key29();break;
+ 226   3      
+ 227   3                                              case 30: LCD_key30();break;
+ 228   3                                              
+ 229   3                                              case 31: LCD_key31();break;
+ 230   3                                              
+ 231   3                                              case 32: LCD_key32();break;
+ 232   3                                              
+ 233   3                                              case 33: LCD_key33();break;
+ 234   3                                              
+ 235   3                                              case 34: LCD_key34();break;
+ 236   3                                              
+ 237   3                                              case 35: LCD_key35();break;
+ 238   3                                              
+ 239   3                                              case 36: LCD_key36();break;
+ 240   3                                              
+ 241   3                                              case 37: LCD_key37();break;
+C51 COMPILER V9.00   TOUCH                                                                 06/13/2013 19:58:53 PAGE 5   
+
+ 242   3                                              
+ 243   3                                              case 38: LCD_key38();break;
+ 244   3                                              
+ 245   3                                              case 39: LCD_key39();break;
+ 246   3                                              
+ 247   3                                              default: break;                         
+ 248   3                                      
+ 249   3                                      }
+ 250   2                                              
+ 251   2                      }
+ 252   1              }
+ 253                  
+ 254          
+ 255                  
+ 256          
+ 257                  void touch_regul(unsigned char regul_value)//设置触摸屏点触摸消息的返回原则
+ 258                  {
+ 259   1      //
+ 260   1                      Send_Check = 0;                                 //校验值清零
+ 261   1                      
+ 262   1                      UART_SendPacked_S(0x55);                //帧头
+ 263   1                      
+ 264   1                      UART_SendPacked_S(0x02);                //数据个数
+ 265   1                      
+ 266   1                      UART_SendPacked_D(0x2D);                //0x2D指令 
+ 267   1                      
+ 268   1                      UART_SendPacked_D(regul_value);
+ 269   1                      
+ 270   1                      UART_SendPacked_S(Send_Check);  //包中有效数据的校验和
+ 271   1                      
+ 272   1                      UART_SendPacked_S(0xAA);
+ 273   1              
+ 274   1              }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    582    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6      27
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

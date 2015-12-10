@@ -1,0 +1,11 @@
+"STARTUP.obj",
+"main.obj",
+"lcd.obj",
+"uart_init.obj",
+"touch.obj",
+"control.obj",
+"home.obj",
+"photo.obj",
+"game.obj" 
+TO "LCD" 
+RAMSIZE(256) 
